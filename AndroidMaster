@@ -1,0 +1,989 @@
+Application View Activity
+package com.twodic.treereport;
+
+
+import com.twodic.treereport.R;
+
+
+import android.app.Activity; import android.app.AlertDialog;
+import android.content.DialogInterface; import android.content.SharedPreferences; import  android.webkit.WebSettings; import android.webkit.WebView;
+import android.os.Bundle;
+
+public class ApplicationGuideViewActivity extends Activity { @Override
+public void onCreate(Bundle icicle) { super.onCreate(icicle); setContentView(R.layout.applicationguideview);
+WebView	mWebView = (WebView) findViewById(R.id.applicationguideview);
+
+WebSettings webSettings = mWebView.getSettings(); webSettings.setSavePassword(false); webSettings.setSaveFormData(false); webSettings.setJavaScriptEnabled(true); webSettings.setSupportZoom(false);
+mWebView.loadUrl("file:///android_asset/applicationguide/index.html");
+
+SharedPreferences preferences = getSharedPreferences(Constant.SharedPreferenceName,MODE_PRIVATE);
+if (preferences.getString(Constant.IsBackNotice1, null)==null)
+{
+AlertDialog.Builder builder = new AlertDialog.Builder(this); builder.setMessage("After finishing reading，Press"back"to go back to menu")
+.setCancelable(false)
+.setPositiveButton("ENTER", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish();
+//Controller.getController().startPictureUploadActivity(CameraPreview.this);
+}
+});
+builder.create().show();
+ 
+SharedPreferences.Editor editor = preferences.edit(); editor.putString(Constant.IsBackNotice1, "True"); editor.commit();
+
+}
+}
+
+
+}
+
+
+Camera Preview
+/*
+*	Copyright (C) 2007 The Android Open Source Project
+*
+*	Licensed under the Apache License, Version 2.0 (the "License");
+*	you may not use this file except in compliance with the License.
+*	You may obtain a copy of the License at
+*
+*	http://www.apache.org/licenses/LICENSE-2.0
+*
+*	Unless required by applicable law or agreed to in writing, software
+*	distributed under the License is distributed on an "AS IS" BASIS,
+*	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*	See the License for the specific language governing permissions and
+*	limitations under the License.
+*/
+
+
+package com.twodic.treereport;
+
+
+import android.app.Activity; import android.app.AlertDialog; import android.content.Context;
+import android.content.DialogInterface; import android.content.pm.ActivityInfo; import android.graphics.Bitmap;
+import android.graphics.BitmapFactory; import android.graphics.Canvas;
+import android.graphics.Matrix; import android.graphics.PixelFormat; import android.hardware.Camera; import android.os.Bundle;
+import android.util.Log; import android.view.KeyEvent;
+import android.view.SurfaceHolder; import android.view.SurfaceView;
+ 
+import android.view.View; import android.view.Window;
+import android.view.View.OnClickListener; import android.widget.Button;
+import android.widget.FrameLayout; import android.widget.LinearLayout; import android.widget.Toast;
+
+
+import java.io.FileNotFoundException; import java.io.FileOutputStream; import java.io.IOException;
+import java.util.List;
+
+
+import com.twodic.treereport.R;
+
+
+
+
+
+
+// ----------------------------------------------------------------------
+
+
+public class CameraPreview extends Activity implements OnClickListener,Camera.PictureCallback,Camera.ShutterCallback{
+private Preview mPreview;
+
+@Override
+protected void onCreate(Bundle savedInstanceState) { super.onCreate(savedInstanceState);
+//this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); this.setRequestedOrientation(Constant.SCREENORIENTATIONDEFAULT);
+/*
+// Hide the window title. requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+// Create our Preview view and set it as the content of our activity. mPreview = new Preview(this);
+FrameLayout _layout=new FrameLayout(this);
+//LinearLayout _layout=new LinearLayout(this); Button _btn=new Button(this);
+//_btn.setWidth("sun");
+_btn.setText("Capture");
+_layout.addView(mPreview);
+ 
+_layout.addView(_btn);
+//_layout.addView(mPreview); setContentView(_layout);
+*/ requestWindowFeature(Window.FEATURE_NO_TITLE); mPreview = new Preview(this);
+// mPreview.set setContentView(R.layout.camerapreview);
+((FrameLayout) findViewById(R.id.camerapreview)).addView(mPreview);
+
+/*
+captureButton=new Button(this); captureButton.setText("Capture"); captureButton.setOnClickListener(this);
+((FrameLayout) findViewById(R.id.camerapreview)).addView(captureButton);
+*/
+
+View _view=findViewById(R.id.capturebutton);
+_view.setOnClickListener(this);
+
+}
+Button captureButton=null;
+
+
+@Override
+public void onClick(View v) {
+// TODO Auto-generated method stub
+//mPreview.
+
+//mPreview.getCamera().stopPreview();
+
+/*
+if (Constant.DebugMode) Toast.makeText(this, "PictureSizes
+"+parameters.getSupportedPictureSizes() , 5).show();
+if (Constant.DebugMode) Toast.makeText(this, "PreviewSize "+parameters.getSupportedPreviewSizes() , 5).show();
+*/
+/*
+
+Camera.Parameters parameters = mPreview.getCamera().getParameters(); List<Camera.Size> _pictureSize=parameters.getSupportedPictureSizes(); List<Camera.Size> _previewSize=parameters.getSupportedPreviewSizes(); for(int i = 0, n = _pictureSize.size(); i < n; i++) {
+if (Constant.DebugMode) Toast.makeText(this, "PictureSizes "+((Camera.Size)_pictureSize.get(i)).width+" "+((Camera.Size)_pictureSize.get(i)).height , 5).show();
+}
+for(int i = 0, n = _previewSize.size(); i < n; i++) {
+ 
+if (Constant.DebugMode) Toast.makeText(this, "PreviewSize "+((Camera.Size)_previewSize.get(i)).width+" "+((Camera.Size)_previewSize.get(i)).height , 5).show();
+}
+*/
+
+if (ModelHolder.capturedBitmap.size()<Constant.MAXPHOTOCOUNT)
+{
+mPreview.getCamera().takePicture(this, null, this);
+}
+ 
+else
+{
+ 
+
+
+AlertDialog.Builder builder = new AlertDialog.Builder(this); builder.setMessage("Have taken 3, no more")
+.setCancelable(false)
+.setPositiveButton("OK", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish(); Controller.getController().startPictureUploadActivity(CameraPreview.this);
+}
+ 
+});
+builder.create().show();
+
+}
+//mPreview.getCamera().takePicture(this, null, this);
+}
+
+public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+if (keyCode == KeyEvent.KEYCODE_CAMERA)
+{
+if (Constant.DebugMode) Toast.makeText(this, "onKeyDown KEYCODE_CAMERA" , Toast.LENGTH_SHORT).show();
+onClick(findViewById(R.id.capturebutton)); return true;
+}
+return super.onKeyDown(keyCode, event);
+}
+
+
+@Override
+public void onPictureTaken(byte[] data, Camera camera) {
+// TODO Auto-generated method stub
+//31077080
+if (Constant.DebugMode) Toast.makeText(this, "onPictureTaken "+data.length , Toast.LENGTH_SHORT).show();
+final byte[] passdata=data;
+
+AlertDialog.Builder builder = new AlertDialog.Builder(this);
+ 
+builder.setMessage("Use this photo？")
+.setCancelable(false)
+
+.setPositiveButton("Yes", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//dialog.cancel();
+//ModelHolder.capturedImage.add(passdata); int _orgw=0,_orgh=0;
+try
+{
+BitmapFactory.Options _options=new BitmapFactory.Options();
+_options.inSampleSize=Constant.sampleRate;
+//_options.
+
+
+//_options.
+/*
+_options.inSampleSize = 5;
+_options.inDither = true;
+_options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+*/
+
+
+ 
+
+passdata.length,_options);
+ 
+Bitmap _orgdecodedBitmap=BitmapFactory.decodeByteArray(passdata, 0,
+
+_orgw=_orgdecodedBitmap.getWidth();
+_orgh=_orgdecodedBitmap.getHeight();
+ 
+
+if (Constant.DebugMode) Toast.makeText(CameraPreview.this, "Before ResizeBitmap "+_orgw+" "+_orgh , Toast.LENGTH_SHORT).show();
+
+Bitmap _decodedBitmap=Utility.ResizeBitmap(_orgdecodedBitmap, Constant.PHOTOWIDTHBOUND, 999999);
+
+if (Constant.SCREENORIENTATIONDEFAULT==ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+//if (Constant.SCREENORIENTATIONDEFAULT==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+{
+Matrix mat = new Matrix(); mat.postRotate(90);
+Bitmap bMapRotate = Bitmap.createBitmap(_decodedBitmap, 0, 0,
+_decodedBitmap.getWidth(), _decodedBitmap.getHeight(), mat, true);
+ModelHolder.capturedBitmap.add(bMapRotate);
+}
+else if (Constant.SCREENORIENTATIONDEFAULT==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+{
+ 
+ModelHolder.capturedBitmap.add(_decodedBitmap);
+}
+
+//ModelHolder.capturedBitmap.add(_decodedBitmap);
+
+//ModelHolder.capturedBitmap.add(Utility.rotateAndFrame(_decodedBitmap));
+// ModelHolder.capturedBitmap.add(_decodedBitmap);
+//BitmapFactory.decodeByteArray(_bitmapDate, 0, _bitmapDate.length);
+
+
+if (ModelHolder.capturedBitmap.size()<Constant.MAXPHOTOCOUNT)
+{
+AlertDialog.Builder builder = new AlertDialog.Builder(CameraPreview.this);
+
+ 
+
+
+
+DialogInterface.OnClickListener() {
+ 
+builder.setMessage("Take another tree picture(MAX:3)？")
+.setCancelable(false)
+.setPositiveButton("Yes", new
+
+public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish(); mPreview.getCamera().startPreview();
+}
+ 
+
+
+DialogInterface.OnClickListener() {
+ 
+})
+.setNegativeButton("No", new
+
+public void onClick(DialogInterface dialog, int id) {
+//dialog.cancel();
+ 
+
+Controller.getController().startPictureUploadActivity(CameraPreview.this);
+}
+ 
+
+
+
+}
+else
+{
+
+}
+}
+ 
+});
+AlertDialog alert = builder.create(); alert.show();
+
+
+
+Controller.getController().startPictureUploadActivity(CameraPreview.this);
+ 
+catch(Throwable eee)
+{
+if (Constant.DebugMode) Toast.makeText(CameraPreview.this, "CameraPreview "+_orgw+" "+_orgh+" "+eee, Toast.LENGTH_SHORT).show();
+}
+
+
+
+}
+ 
+})
+.setNegativeButton("No", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish(); mPreview.getCamera().startPreview();
+}
+});
+AlertDialog alert = builder.create(); alert.show();
+
+
+
+/*
+if (Constant.DebugMode) Toast.makeText(this, "onPictureTaken "+data.length , Toast.LENGTH_SHORT).show();
+Controller.startPictureUploadActivity(this);
+*/
+//mPreview.getCamera().startPreview();
+/*
+FileOutputStream outStream = null; try {
+// Write to SD Card
+outStream = new FileOutputStream(String.format("/sdcard/upload/%d.jpg", System.currentTimeMillis())); // <9>
+outStream.write(data); outStream.close();
+//Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
+} catch (FileNotFoundException e) { // <10> e.printStackTrace();
+} catch (IOException e) { e.printStackTrace();
+} finally {
+}
+*/
+//Log.d(TAG, "onPictureTaken - jpeg");
+
+
+
+}
+
+
+@Override
+public void onShutter() {
+// TODO Auto-generated method stub
+ 
+//if (Constant.DebugMode) Toast.makeText(this, "onShutter ", Toast.LENGTH_SHORT).show();
+if (Constant.DebugMode) Toast.makeText(this, "previewSize "+this.mPreview.previewSizeString, Toast.LENGTH_LONG).show();
+if (Constant.DebugMode) Toast.makeText(this, "pictureSize "+this.mPreview.pictureSizeString, Toast.LENGTH_LONG).show();
+
+}
+
+
+}
+
+
+// ----------------------------------------------------------------------
+
+
+class Preview extends SurfaceView implements SurfaceHolder.Callback { SurfaceHolder mHolder;
+Camera mCamera;
+
+public Camera getCamera()
+{
+return mCamera;
+}
+
+
+Preview(Context context) { super(context);
+
+// Install a SurfaceHolder.Callback so we get notified when the
+// underlying surface is created and destroyed. mHolder = getHolder(); mHolder.addCallback(this);
+mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+}
+
+
+public void surfaceCreated(SurfaceHolder holder) {
+// The Surface has been created, acquire the camera and tell it where
+// to draw.
+mCamera = Camera.open();
+
+try {
+mCamera.setPreviewDisplay(holder);
+
+} catch (IOException exception) { mCamera.release(); mCamera = null;
+ 
+// TODO: add more exception handling logic here
+}
+
+}
+
+
+public void surfaceDestroyed(SurfaceHolder holder) {
+// Surface will be destroyed when we return, so stop the preview.
+// Because the CameraDevice object is not a shared resource, it's very
+// important to release it when the activity is paused. mCamera.stopPreview();
+mCamera.release(); mCamera = null;
+}
+List<Camera.Size> pictureSize; String pictureSizeString=""; List<Camera.Size> previewSize; String previewSizeString="";
+public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+// Now that the size is known, set up the camera parameters and begin
+// the preview.
+Camera.Parameters parameters = mCamera.getParameters();
+/*
+System.out.println("Log Picture Size "+parameters.getSupportedPictureSizes()); System.out.println("Log Preview Size "+parameters.getSupportedPreviewSizes());
+*/
+
+pictureSize=parameters.getSupportedPictureSizes(); previewSize=parameters.getSupportedPreviewSizes();
+
+int smallestvalue=99999,smallestindex=-1; if (pictureSize!=null)
+{
+
+for(int i = 0, n = pictureSize.size(); i < n; i++) { pictureSizeString+=(((Camera.Size)pictureSize.get(i)).width+"
+"+((Camera.Size)pictureSize.get(i)).height+" ");
+if (((Camera.Size)pictureSize.get(i)).width<smallestvalue)
+{
+smallestindex=i; smallestvalue=((Camera.Size)pictureSize.get(i)).width;
+}
+}
+if (pictureSize.get(smallestindex).width>Constant.SAMPLEWIDTHBOUND)
+{
+Constant.sampleRate=2;
+}
+ 
+parameters.setPictureSize(pictureSize.get(smallestindex).width, pictureSize.get(smallestindex).height);
+}
+
+smallestvalue=99999; smallestindex=-1;
+if (previewSize!=null)
+{
+for(int i = 0, n = previewSize.size(); i < n; i++) {
+//if (Constant.DebugMode) Toast.makeText(this, "PreviewSize "+((Camera.Size)_previewSize.get(i)).width+" "+((Camera.Size)_previewSize.get(i)).height , 5).show();
+previewSizeString+=(((Camera.Size)previewSize.get(i)).width+" "+((Camera.Size)previewSize.get(i)).height+" ");
+if (((Camera.Size)previewSize.get(i)).width<smallestvalue)
+{
+smallestindex=i;
+//smallestvalue=((Camera.Size)previewSize.get(i)).width;
+}
+}
+parameters.setPreviewSize(previewSize.get(smallestindex).width, previewSize.get(smallestindex).height);
+}
+ 
+/* else
+{
+
+}
+*/
+ 
+
+
+
+parameters.setPreviewSize(300, 400);
+ 
+//parameters.setPreviewSize(w, h);
+/*
+parameters.setPreviewSize(480, 640);
+parameters.setPictureSize(1024, 768);
+*/
+//start kstang
+//parameters.setPreviewSize(h, w); parameters.setPictureFormat(PixelFormat.JPEG);
+//parameters.setRotation(90);
+//parameters.set
+
+parameters.setJpegQuality(95);
+if (Constant.SCREENORIENTATIONDEFAULT==ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+{
+parameters.set("orientation", "portrait");
+
+}
+else if (Constant.SCREENORIENTATIONDEFAULT==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+{
+ 
+parameters.set("orientation", "landscape");
+}
+
+//parameters.setPictureSize(480, 360);
+//end kstang
+
+
+mCamera.setParameters(parameters); mCamera.startPreview();
+}
+/*
+public void draw(Canvas canvas)
+{
+super.draw(canvas); canvas.
+}
+*/
+
+
+Constant
+package com.twodic.treereport; import java.util.Vector;
+import android.content.pm.ActivityInfo;
+
+
+public class Constant {
+//public static ProgressDialog Progress= public static int widthPixels=0;
+public static int heightPixels=0; public static int sampleRate=1;
+
+public static int MAXPHOTOCOUNT=3; public static int PHOTOWIDTHBOUND=800;
+public static int SAMPLEWIDTHBOUND=1600; public static boolean DebugMode=false;
+public static String SharedPreferenceName="com.kstang.treeprint"; public static String IsTreeGuideRead="IsTreeGuideRead";
+
+public static String IsBackNotice0="IsBackNotice0"; public static String IsBackNotice1="IsBackNotice1"; public static String IsBackNotice2="IsBackNotice2";
+ 
+public static String[][] QUESTIONCHOICES={
+{" Tree Preservation "," Tree Hazard "},
+{"Big Tree","Valuable Species","Old Tree","Historic Value",},
+{"Tree Collapse ","termites","Damaged Roots","Split Tree Body","Hanging tree"}
+};
+public static boolean[][] QUESTIONCHOICESSTATUS={
+{false,false},
+{false,false,false,false,false},
+{false,false,false,false,false,false}
+};
+
+
+public static int SCREENORIENTATIONDEFAULT=ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE; public static String LOCATIONPROVIDERDEFAULT=android.location.LocationManager.GPS_PROVIDER;
+
+
+Controller
+package com.twodic.treereport; import java.util.Vector;
+import android.app.Activity; import android.app.AlertDialog; import android.content.Context;
+import android.content.DialogInterface; import android.content.Intent;
+import android.graphics.Bitmap; import android.location.Location;
+import android.location.LocationListener; import android.location.LocationManager; import android.net.Uri;
+import  android.os.Bundle; import android.provider.Settings;
+import android.util.DisplayMetrics; import android.view.View;
+import android.view.View.OnClickListener; import android.widget.Button;
+import android.widget.Toast;
+
+
+public class Controller	implements LocationListener{
+
+//private static LocationManager locationManager=(LocationManager) getSystemService(LOCATION_SERVICE);;
+
+//private static Context _context=null;
+ 
+public LocationManager locationManager=null;
+
+
+public void StartChoiceGroup0(Activity _parent)
+{
+final Activity _currentActivity=_parent; final int currentChoiceGroup=0;
+AlertDialog.Builder _builder = new AlertDialog.Builder(_parent);
+_builder.setTitle(Constant.QUESTIONTITLES[currentChoiceGroup]);
+_builder.setSingleChoiceItems(Constant.QUESTIONCHOICES[currentChoiceGroup], -1, new DialogInterface.OnClickListener() {
+public void onClick(DialogInterface dialog, int item) {
+if (Constant.DebugMode) Toast.makeText(_currentActivity, " items[item] " +item, Toast.LENGTH_SHORT).show();
+for (int i=0;i<Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup].length;i++)
+{
+ 
+
+}
+
+}
+});
+ 
+Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][i]=false; Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][item]=true;
+ 
+_builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//dialog.cancel();
+//_alert.show();
+//MyActivity.this.finish();
+//alert.show();
+//dialog.s
+//Controller.getController().startEmailInputActivity(PictureUploadActivity.this);
+
+
+}
+});
+
+
+_builder.setCancelable(false);
+
+final AlertDialog _alert = _builder.create();
+//alert.
+//alert.
+
+_alert.show();
+
+final Button okButton =	_alert.getButton(DialogInterface.BUTTON_POSITIVE); okButton.setOnClickListener(new OnClickListener() {
+@Override
+public void onClick(View v) {
+ 
+boolean _tmpchoice=false;
+for (int i=0;i<Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup].length;i++)
+{
+if (Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][i])
+{
+_tmpchoice=true; if (i==0)
+{
+_alert.dismiss(); StartChoiceGroup1(_currentActivity);
+}
+else if (i==1)
+{
+_alert.dismiss(); StartChoiceGroup2(_currentActivity);
+}
+
+return;
+}
+}
+
+if (!_tmpchoice)
+{
+AlertDialog.Builder builder = new AlertDialog.Builder(_currentActivity); builder.setMessage("Chose at least one")
+.setCancelable(false)
+.setPositiveButton("Confirm", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish();
+
+//Controller.getController().startPictureUploadActivity(CameraPreview.this);
+}
+});
+builder.create().show();
+}
+//_alert.dismiss();
+// handle the click
+}
+
+
+});
+return;
+}
+
+public void StartChoiceGroup1(Activity _parent)
+{
+final Activity _currentActivity=_parent; final int currentChoiceGroup=1;
+ 
+AlertDialog.Builder _builder = new AlertDialog.Builder(_parent);
+_builder.setTitle(Constant.QUESTIONTITLES[currentChoiceGroup]);
+//Constant.QUESTIONCHOICESSTATUS
+//_builder.setSingleChoiceItems(Constant.QUESTIONCHOICES[currentChoiceGroup], -1, new DialogInterface.OnClickListener() {
+_builder.setMultiChoiceItems(Constant.QUESTIONCHOICES[currentChoiceGroup], Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup], new DialogInterface.OnMultiChoiceClickListener ()
+{
+
+@Override
+public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+// TODO Auto-generated method stub Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][which]=isChecked;
+}
+});
+_builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+
+
+}
+});
+
+
+_builder.setCancelable(false);
+
+final AlertDialog _alert = _builder.create();
+//alert.
+
+_alert.show();
+
+final Button okButton =	_alert.getButton(DialogInterface.BUTTON_POSITIVE); okButton.setOnClickListener(new OnClickListener() {
+
+@Override
+public void onClick(View v) {
+
+boolean _tmpchoice=false;
+for (int i=0;i<Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup].length;i++)
+{
+if (Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][i])
+{
+_tmpchoice=true;
+_alert.dismiss(); Controller.getController().startEmailInputActivity(_currentActivity); return;
+}
+}
+ 
+if (!_tmpchoice)
+{
+AlertDialog.Builder builder = new AlertDialog.Builder(_currentActivity); builder.setMessage("Chose at least one")
+.setCancelable(false)
+.setPositiveButton("Confirm", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish();
+
+//Controller.getController().startPictureUploadActivity(CameraPreview.this);
+}
+});
+builder.create().show();
+}
+//_alert.
+}
+
+
+});
+return;
+
+}
+
+public void StartChoiceGroup2(Activity _parent)
+{
+final Activity _currentActivity=_parent; final int currentChoiceGroup=2;
+AlertDialog.Builder _builder = new AlertDialog.Builder(_parent);
+_builder.setTitle(Constant.QUESTIONTITLES[currentChoiceGroup]);
+//Constant.QUESTIONCHOICESSTATUS
+//_builder.setSingleChoiceItems(Constant.QUESTIONCHOICES[currentChoiceGroup], -1, new DialogInterface.OnClickListener() {
+_builder.setMultiChoiceItems(Constant.QUESTIONCHOICES[currentChoiceGroup], Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup], new DialogInterface.OnMultiChoiceClickListener ()
+{
+
+@Override
+public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+// TODO Auto-generated method stub Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][which]=isChecked;
+}
+});
+_builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+
+
+}
+});
+ 
+
+
+_builder.setCancelable(false);
+
+final AlertDialog _alert = _builder.create();
+//alert.
+
+_alert.show();
+
+final Button okButton =	_alert.getButton(DialogInterface.BUTTON_POSITIVE); okButton.setOnClickListener(new OnClickListener() {
+
+@Override
+public void onClick(View v) {
+
+boolean _tmpchoice=false;
+for (int i=0;i<Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup].length;i++)
+{
+if (Constant.QUESTIONCHOICESSTATUS[currentChoiceGroup][i])
+{
+_tmpchoice=true;
+_alert.dismiss(); Controller.getController().startEmailInputActivity(_currentActivity); return;
+}
+}
+
+if (!_tmpchoice)
+{
+AlertDialog.Builder builder = new AlertDialog.Builder(_currentActivity); builder.setMessage("Chose at least one")
+.setCancelable(false)
+.setPositiveButton("Confirm", new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {
+//MyActivity.this.finish();
+
+//Controller.getController().startPictureUploadActivity(CameraPreview.this);
+}
+});
+builder.create().show();
+}
+//_alert.
+}
+
+
+});
+return;
+}
+ 
+
+
+
+public void requestLocationUpdates() { locationManager.requestLocationUpdates(Constant.LOCATIONPROVIDERDEFAULT, 20000, 1, this);
+
+//locationManager.requestLocationUpdates(android.location.LocationManager.NETWORK_PROVIDER, 20000, 1, this);
+
+}
+
+public void getLastKnownLocation() {
+//locationManager.requestLocationUpdates(android.location.LocationManager.GPS_PROVIDER, 20000, 1, this);
+
+//locationManager.requestLocationUpdates(android.location.LocationManager.NETWORK_PROVIDER, 20000, 1, this);
+Location
+_location=locationManager.getLastKnownLocation(Constant.LOCATIONPROVIDERDEFAULT); if (_location!=null)
+{
+ModelHolder.latitude=_location.getLatitude(); ModelHolder.longitude=_location.getLongitude();
+}
+}
+
+static private Controller _controller=null;
+
+public boolean GPSEnabled()
+{
+return locationManager.isProviderEnabled(Constant.LOCATIONPROVIDERDEFAULT );
+
+}
+
+static public Controller getController()
+{
+if (_controller==null)
+{
+_controller=new Controller();
+}
+//if (Constant.DebugMode) Toast.makeText(null, "getController " , Toast.LENGTH_SHORT).show(); return _controller;
+}
+
+public void startTreeGuideActivity(Activity _currActivity)
+{
+//
+//Intent _nextA
+ 
+Intent _nextActivity = new Intent(_currActivity,TreeGuideActivity.class);
+_currActivity.startActivity(_nextActivity); return;
+}
+
+public void startApplicationGuideActivity(Activity _currActivity)
+{
+Intent _nextActivity = new Intent(_currActivity,ApplicationGuideViewActivity.class);
+_currActivity.startActivity(_nextActivity); return;
+}
+
+
+public void startUploadCompletedActivity(Activity _currActivity)
+{
+Intent _nextActivity = new Intent(_currActivity,UploadCompletedActivity.class);
+_currActivity.startActivity(_nextActivity); return;
+}
+
+public void startTreePrintActivity(Activity _currActivity)
+{
+Intent _nextActivity = new Intent(_currActivity,TreePrintActivity.class);
+_nextActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+_currActivity.startActivity(_nextActivity); return;
+}
+
+public void startEmailInputActivity(Activity _currActivity)
+{
+//FLAG_ACTIVITY_CLEAR_TOP
+Intent _nextActivity = new Intent(_currActivity,EmailInputActivity.class);
+
+_currActivity.startActivity(_nextActivity);
+
+return;
+}
+
+public void startCameraPreview(Activity _currActivity)
+{
+Intent _nextActivity = new Intent(_currActivity,CameraPreview.class);
+_currActivity.startActivity(_nextActivity); return;
+}
+
+public void startPictureUploadActivity(Activity _currActivity)
+{
+Intent _nextActivity = new Intent(_currActivity,PictureUploadActivity.class);
+ 
+_currActivity.startActivity(_nextActivity); return;
+}
+
+
+public void goToURL(Activity _currActivity,String _url)
+{
+Intent myIntent = new Intent(Intent.ACTION_VIEW,	Uri.parse(_url));
+_currActivity.startActivity(myIntent);
+}
+
+public void startOver()
+{
+//ModelHolder.capturedImage=new Vector<byte[]>();
+/*
+public static Vector<Bitmap> capturedBitmap=new Vector<Bitmap>(); public static double longitude=0;
+public static double latitude=0; public static String email=null;
+*/
+ModelHolder.capturedBitmap=new Vector<Bitmap>(); ModelHolder.email="";
+ModelHolder.longitude=-1; ModelHolder.latitude=-1;
+for (int i=0;i<Constant.QUESTIONTITLES.length;i++)
+{
+for (int j=0;j<Constant.QUESTIONCHOICESSTATUS[i].length;j++)
+{
+Constant.QUESTIONCHOICESSTATUS[i][j]=false;
+}
+}
+return;
+}
+
+public void reloadDimension(Activity _currActivity)
+{
+DisplayMetrics metrics = new DisplayMetrics();
+_currActivity.getWindowManager().getDefaultDisplay().getMetrics( metrics ); Constant.widthPixels=metrics.widthPixels; Constant.heightPixels=metrics.heightPixels;
+}
+
+@Override
+public void onLocationChanged(Location location) {
+//To
+// TODO Auto-generated method stub
+//location.getp this.locationManager.removeUpdates(this);
+ 
+if (location!=null)
+{
+ModelHolder.latitude=location.getLatitude(); ModelHolder.longitude=location.getLongitude();
+}
+
+}
+
+
+@Override
+public void onProviderDisabled(String provider) {
+// TODO Auto-generated method stub
+
+}
+
+
+@Override
+public void onProviderEnabled(String provider) {
+// TODO Auto-generated method stub
+
+}
+
+
+@Override
+public void onStatusChanged(String provider, int status, Bundle extras) {
+// TODO Auto-generated method stub
+
+}
+
+}
+
+
+Image Adapter
+package com.twodic.treereport;
+
+
+import android.content.Context; import android.graphics.Bitmap;
+import android.graphics.BitmapFactory; import android.util.DisplayMetrics; import android.view.View;
+import android.view.ViewGroup; import android.widget.BaseAdapter; import android.widget.GridView; import android.widget.ImageView;
+
+
+public class ImageAdapter extends BaseAdapter {
+ 
+private Context mContext;
+
+
+public ImageAdapter(Context c) { mContext = c;
+}
+
+
+public int getCount() {
+return ModelHolder.capturedBitmap.size();
+}
+
+
+public Object getItem(int position) { return null;
+}
+
+
+public long getItemId(int position) { return 0;
+}
+
+
+// create a new ImageView for each item referenced by the Adapter public View getView(int position, View convertView, ViewGroup parent) {
+/*
+if ((ModelHolder.capturedImage!=null)&&( ModelHolder.capturedImage.size()==0))
+{
+return null;
+}
+*/
+
+ImageView imageView;
+//byte[] _bitmapData=ModelHolder.capturedImage.elementAt(position); Bitmap _decodedBitmap=ModelHolder.capturedBitmap.elementAt(position);
+
+//BitmapFactory.decodeByteArray(_bitmapDate, 0, _bitmapDate.length);
+
+
+
+int _width=(int)(Constant.widthPixels/2.1); if ( ModelHolder.capturedBitmap.size()==1)
+{
+_width=(int)(Constant.widthPixels*0.9);
+}
+//int _height=(int)(_width*(_decodedBitmap.getHeight()/_decodedBitmap.getWidth())); int _height=(int)((_width*_decodedBitmap.getHeight())/_decodedBitmap.getWidth());
+ 
+
+/*
+System.out.println("Log widthPixels		"+Constant.widthPixels); System.out.println("Log heightPixels "+Constant.heightPixels); System.out.println("Log getWidth		"+_decodedBitmap.getWidth()); System.out.println("Log getHeight "+_decodedBitmap.getHeight()); System.out.println("Log _width	"+_width); System.out.println("Log _height "+_height);
+*/
+if (convertView == null) {	// if it's not recycled, initialize some attributes
+
+
+/*
+imageView = new ImageView(mContext); imageView.setLayoutParams(new GridView.LayoutParams(85, 85)); imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+*/
+//DisplayMetrics metrics = new DisplayMetrics();
+/*
+System.out.println("Log "+metrics.); System.out.println("Log "+metrics.heightPixels);
+*/
+//start kstang
+//Device.
+imageView = new ImageView(mContext);
+imageView.setLayoutParams(new GridView.LayoutParams(_width, _height)); imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//end kstang imageView.setPadding(4, 4, 4, 4);
+} else {
+imageView = (ImageView) convertView;
+}
+imageView.setImageBitmap(_decodedBitmap);
+
+return imageView;
+}
+
+
+// references to our images
+/*
+private Integer[] mThumbIds = {
+R.drawable.tree0,R.drawable.tree1,R.drawable.tree2
+};
+*/
